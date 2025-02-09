@@ -31,6 +31,63 @@ start_of_assembly:
    ;       r24 = a, r25 = b
    ;
 
+    ; Only use the value in a (the testasm function just calls fib(a))
+   ldi r25, 0x00
+   call fib
+   rjmp end_of_assembly
+
+  ; definition of 
+  ; unsigned int fib(unsigned char n)
+  fib:
+
+    ; if (n == 0)
+    cpi r24, 0x00
+    breq zero
+
+    ; if (n == 1)
+    cpi r24, 0x01
+    breq one
+
+    ; we use r0 and r1 in this function, so push their current values onto the stack
+    push r0
+    push r1
+
+    ; decrement r24 and push its value (n-1) to the stack
+    dec r24
+    push r24
+
+    ; call fib(n-1) and move the result to r1:r0
+    call fib
+    movw r0, r24
+
+    ; pop (n-1) from the stack to r24
+    pop r24
+
+    ; call fib(n-2)
+    dec r24
+    call fib
+    
+    ; add fib(n-1) with fib(n-2), and store result in r25:r24
+    add r24, r0
+    adc r25, r1
+
+    ; restore r1 and r0 to their original values
+    pop r1
+    pop r0
+
+    ret
+
+  ; return 0
+  zero: 
+    ldi r24, 0x00
+    ldi r25, 0x00
+    ret
+
+  ; return 1
+  one:
+    ldi r24, 0x01
+    ldi r25, 0x00
+    ret
 
    ;
    ;  --- YOUR CODE ENDS ---

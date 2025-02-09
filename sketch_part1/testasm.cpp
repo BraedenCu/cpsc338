@@ -31,13 +31,19 @@ start_of_assembly:
    ;       r24 = a, r25 = b
    ;
 
+    ; r24 <- r24 + r25
     add r24, r25
 
+    ; set r25 to 0
     ldi r25, 0x00
+
+    ; if carry is set, set r25 to 1 and return
     brcs set_carry
+    ; otherwise return from function
     rjmp end_of_assembly
 
-    set_carry:
+    ; set r25 to 1 and return
+  set_carry:
     ldi r25, 0x01
 
    ;

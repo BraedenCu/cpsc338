@@ -31,6 +31,77 @@ start_of_assembly:
    ;       r24 = a, r25 = b
    ;
 
+    ; this function uses r0 and r1, so push them to the stack
+    push r0
+    push r1
+
+    ; push a and b to the stack
+    push r24
+    push r25
+
+    ; call sumval(a, b) and move the result to r1:r0
+    call sumval
+    mov r0, r24
+    mov r1, r25
+
+    ; pop a and b back to r24 and r25
+    pop r25
+    pop r24
+
+    ; call diffval(a, b)
+    call diffval
+
+    ; set r25:r24 <- r25:r24 + r1:r0
+    add r24, r0
+    adc r25, r1
+
+    ; replace r1 and r0 with their original values
+    pop r1
+    pop r0
+
+    ; exit testasm
+    rjmp end_of_assembly
+
+
+  ; Definition of sumval (same as part 1)
+  sumval:
+
+    ; r24 <- r24 + r25
+    add r24, r25
+
+    ; set r25 to 0
+    ldi r25, 0x00
+
+    ; if the carry is set, branch to set_carry
+    brcs set_carry
+    ; otherwise, return
+    ret
+
+  ; set r25 to 1 and return
+  set_carry:
+    ldi r25, 0x01
+    ret
+
+  diffval:
+
+    ; compare r25 with r24
+    cp r25, r24
+
+    ; branch to lessthan if r25 is less than r24
+    brlo lessthan
+
+    ; otherwise, set r24 <- r25 - r24 (b-a), set r25 to 0, and return
+    sub r25, r24
+    mov r24, r25
+    ldi r25, 0x00
+    ret
+
+    ; set r24 <- r24 - r25 (a-b), set r25 to 0, and return
+  lessthan:
+    sub r24, r25
+    ldi r25, 0x00
+    ret
+
 
    ;
    ;  --- YOUR CODE ENDS ---

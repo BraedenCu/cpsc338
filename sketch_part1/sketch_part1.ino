@@ -4,7 +4,7 @@ void setup() {
   // put your setup code here, to run once
   Serial.begin(9600);
   Serial.print("The sum of 3 and 4 is: ");
-  Serial.println(testasm(3, 4));
+  Serial.println(testasm(0xff, 0xff));
   pinMode (13, OUTPUT);
 }
 

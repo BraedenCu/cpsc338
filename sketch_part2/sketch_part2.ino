@@ -3,10 +3,37 @@
 void setup() {
   // put your setup code here, to run once
   Serial.begin(9600);
-  Serial.print("The sum of 3 and 4 is: ");
-  Serial.println(testasm(3, 4));
+  test_sum_diff();
   pinMode (13, OUTPUT);
 }
+
+
+void test_sum_diff() {
+  for (int i = 0; i < 100; i++) {
+    unsigned char a = random(0, 256);
+    unsigned char b = random(0, 256);
+    unsigned int sum = a + b;
+    unsigned int diff;
+    if (a > b) {
+      diff = a - b;
+    } else {
+      diff = b - a;
+    }
+    unsigned int total = sum+diff;
+    if (testasm(a, b) != total) {
+      Serial.print("Error: ");
+      Serial.print(a);
+      Serial.print(" + ");
+      Serial.print(b);
+      Serial.print(" = ");
+      Serial.print(testasm(a, b));
+      Serial.print(" != ");
+      Serial.println(sum);
+    }
+  }
+  Serial.println("Tests passed!");
+}
+
 
 void loop() {
   // put your main code here, to run repeatedly:
