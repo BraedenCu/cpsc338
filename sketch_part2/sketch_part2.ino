@@ -9,6 +9,7 @@ void setup() {
 
 
 void test_sum_diff() {
+  bool test_passed = 1;
   for (int i = 0; i < 100; i++) {
     unsigned char a = random(0, 256);
     unsigned char b = random(0, 256);
@@ -21,17 +22,20 @@ void test_sum_diff() {
     }
     unsigned int total = sum+diff;
     if (testasm(a, b) != total) {
-      Serial.print("Error: ");
+      Serial.print("Error: testasm(");
       Serial.print(a);
-      Serial.print(" + ");
+      Serial.print(", ");
       Serial.print(b);
-      Serial.print(" = ");
+      Serial.print(") = ");
       Serial.print(testasm(a, b));
       Serial.print(" != ");
-      Serial.println(sum);
+      Serial.println(total);
+      test_passed = 0;
     }
   }
-  Serial.println("Tests passed!");
+  if (test_passed) {
+    Serial.println("Tests passed!");
+  }
 }
 
 
