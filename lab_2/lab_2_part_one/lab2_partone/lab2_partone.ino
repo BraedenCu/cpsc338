@@ -1,33 +1,40 @@
+uint8_t button_pin = 2;
+int delay_amt = 10;
+
 void setup() {
-  // setup button code
-  pinMode(2, INPUT);
+  DDRD &= ~(1 << button_pin); // Set button_pin to input
+  PORTD |= (1 << button_pin); // Set button_pin to passive pull-up
+
   Serial.begin(9600);  
 }
 
-void loop() {
-  // sample every few milliseconds, take five readings and if three out of the five are registerd as high, then the button shoul be pressed
-  int buttonState = 0;
+int debounce(int pin) {
   // begin sampling
-  int* stored_samples = new int[5];
-  for (int i = 0; i < 5; i++) {
-    stored_samples[i] = digitalRead(2);
-    delay(100);
-  }
-  // count the number of high readings
-  int high_count = 0;
-  for (int i = 0; i < 5; i++) {
-    if (stored_samples[i] == HIGH) {
-      high_count++;
-    }
+  int count = 0;
+  for (int i = 0; i < 3; i++) {
+    count += (PIND >> pin) & 1;
+    delay(delay_amt);
   }
 
   // if three out of the five readings are high, then the button is pressed
-  if (high_count >= 3) {
-    buttonState = HIGH;
+  if (count >= 2) {
+    return HIGH;
   } else {
-    buttonState = LOW;
+    return LOW;
+  }
+}
+
+int prev = 0;
+void loop() {
+  int curr = debounce(button_pin);
+
+  if (curr != prev) {
+    if (curr == HIGH) {
+      Serial.println("Button not pressed");
+    } else {
+      Serial.println("Button pressed");
+    }
   }
 
-  // print the button state
-  Serial.println(buttonState);
+  prev = curr;
 }
