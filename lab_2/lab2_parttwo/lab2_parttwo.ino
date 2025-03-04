@@ -117,15 +117,16 @@ void write_to_row(int row, int cols[]) {
     digitalWrite(row_pins[i], row == i);
   }
 
-  // Serial.print("Printing: ");
   // set column pins
   for (int i = 0; i < 5; i++) {
     digitalWrite(col_pins[i], !cols[i]);
-    // Serial.print(cols[i]);
+    delay(1);
+    digitalWrite(col_pins[i], 1);
   }
-  // Serial.print(" to row ");
-  // Serial.println(row);
 
+
+  // turn off the row pin
+  digitalWrite(row_pins[row], 0);
 
 }
 
@@ -135,7 +136,6 @@ void display_digit(int digit) {
   Serial.println(digit);
   for (int i = 0; i < 7; i++) {
     write_to_row(i, matrices[digit][i]);
-    delay(1);
   }
 }
 
@@ -158,6 +158,8 @@ void loop() {
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 50; j++) {
       display_digit(i);
+      // int a[5] = {1,0,0,0,1};
+      // write_to_row(1, a);
     }
   }
 }
