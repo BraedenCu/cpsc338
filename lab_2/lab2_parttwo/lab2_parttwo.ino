@@ -101,33 +101,32 @@ int matrices[10][7][5] = {
   }
 };
 
-// Arduino pins that correspond to dot-matrix rows
-// These pins need to be high for the LED to turn on
-int row_pins[7] = {2, 3, 4, 5, 6, 7, 8};
-
-// Arduino pins that correspond to dot-matrix rows
-// These pins need to be low for the LED to turn on
-int col_pins[5] = {9, 10, 11, 12, 13};
+#define SER 4
+#define RCLK 5
+#define SRCLK 6
 
 // Write to a row given the columns that should be turned on in that row
 // for example, if row = 0 and cols = {0, 1, 1 1, 0}, then the top row is set to off, on, on, on, off
 void write_to_row(int row, int cols[]) {
-  // set row pins
-  for (int i = 0; i < 7; i++) {
-    digitalWrite(row_pins[i], row == i);
-  }
+  digitalWrite(RCLK, 0);
 
-  // set column pins
-  for (int i = 0; i < 5; i++) {
-    digitalWrite(col_pins[i], !cols[i]);
+  for (int i = 4; i >= 0; i--) {
+    digitalWrite(SRCLK, 0);
     delay(1);
-    digitalWrite(col_pins[i], 1);
+    digitalWrite(SER, cols[i]);
+    delay(1);
+    digitalWrite(SRCLK, 1);
   }
 
+  for (int i = 6; i >= 0; i--) {
+    digitalWrite(SRCLK, 0);
+    delay(1);
+    digitalWrite(SER, i != row);
+    delay(1);
+    digitalWrite(SRCLK, 1);
+  }
 
-  // turn off the row pin
-  digitalWrite(row_pins[row], 0);
-
+  digitalWrite(RCLK, 1);
 }
 
 
@@ -142,24 +141,17 @@ void display_digit(int digit) {
 void setup() {
   Serial.begin(9600);
 
-  // set all row pins to output
-  for (int i = 0; i < 7; i++) {
-    pinMode(row_pins[i], OUTPUT);
-  }
-
-  // set all column pins to output
-  for (int i = 0; i < 5; i++) {
-    pinMode(col_pins[i], OUTPUT);
-  }
+  pinMode(SER, OUTPUT);
+  pinMode(RCLK, OUTPUT);
+  pinMode(SRCLK, OUTPUT);
 }
 
 
 void loop() {
   for (int i = 0; i < 10; i++) {
+    Serial.println(i);
     for (int j = 0; j < 50; j++) {
       display_digit(i);
-      // int a[5] = {1,0,0,0,1};
-      // write_to_row(1, a);
     }
   }
 }

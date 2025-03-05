@@ -16,7 +16,7 @@ int debounce(int pin) {
     delay(delay_amt);
   }
 
-  // if three out of the five readings are high, then the button is pressed
+  // if 2 out of the 3 readings are high, then the button is pressed
   if (count >= 2) {
     return HIGH;
   } else {
