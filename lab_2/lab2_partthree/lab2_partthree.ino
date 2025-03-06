@@ -163,13 +163,22 @@ void write_to_row(int row, int cols[]) {
 
 // Check if the button was pressed and inturrupt sevice routine was triggered
 void button_interrupt() {
-    long curr_time = millis();
+  /*
+  curr_digit = (curr_digit +1) % 10;
+  detachInterrupt(digitalPinToInterrupt(2));
+  delay(debounce_delay);
+  attachInterrupt(digitalPinToInterrupt(2), button_interrupt, FALLING);   
+  */
+  long curr_time = millis();
 
-    if (curr_time - last_time > debounce_delay) {
-        // update current digit, ensure that it wraps around 0-9
-        curr_digit = (curr_digit + 1) % 10;
-        last_time = curr_time;
-    }
+  // Check to ensure no two buttons occur within 200 milliseconds, if not, 
+  // update count
+  long time_difference = curr_time - last_time;
+  if (time_difference > debounce_delay) {
+      // update current digit, ensure that it wraps around 0-9
+      curr_digit = (curr_digit + 1) % 10; // use modulo for wrapping
+      last_time = curr_time;
+  }
 }
 
 
