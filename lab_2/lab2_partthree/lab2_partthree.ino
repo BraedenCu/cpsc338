@@ -137,7 +137,7 @@ void write_to_row(int row, int cols[]) {
 
 // Check if the button was pressed and inturrupt sevice routine was triggered
 void button_interrupt() {
-    curr_time = millis();
+    long curr_time = millis();
 
     if (curr_time - last_time > debounce_delay) {
         // update current digit, ensure that it wraps around 0-9
@@ -172,20 +172,12 @@ void setup() {
   pinMode(2, INPUT_PULLUP);
 
   // Attach inturrupt to PD2
-  attachInterrupt(digitalPinToInterrupt(2), change_digit, FALLING); 
+  attachInterrupt(digitalPinToInterrupt(2), button_interrupt, FALLING); 
 }
 
 
+
 void loop() {
-    /*
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 50; j++) {
-      display_digit(i);
-      // int a[5] = {1,0,0,0,1};
-      // write_to_row(1, a);
-    }
-  }
-    */
     display_digit(curr_digit);
     delay(1);
 }
