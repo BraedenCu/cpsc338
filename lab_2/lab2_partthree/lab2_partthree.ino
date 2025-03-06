@@ -116,23 +116,49 @@ int curr_digit = 0;
 long last_time = 0;
 long debounce_delay = 200;
 
-// Write to a row given the columns that should be turned on in that row
-// for example, if row = 0 and cols = {0, 1, 1 1, 0}, then the top row is set to off, on, on, on, off
+// define pin values
+#define SER 4
+#define RCLK 5
+#define SRCLK 6
+
+// Basically the same as digitalWrite
+// Write value (1 or 0) to an output pin
+// pin must be initialized to output for this to work
+void write_to_pin(int pin, int value) {
+  if (value) {
+    PORTD |= (1 << pin);
+  } else {
+    PORTD &= ~(1 << pin);
+  }
+}
+
+// Set an LED matrix row to the values in cols
+// for example, if row = 0 and cols = {0, 1, 1, 1, 0}, then the top row is set to off, on, on, on, off
+//  
 void write_to_row(int row, int cols[]) {
-  // set row pins
+  // Set RCLK pin on shift register to 0
+  // this way, it does not update the register output pins until RCLK goes high
+  write_to_pin(RCLK, 0);
+
+  // Shift all of the row values
+  // Only want to turn on the matrix row corresponding to the variable row
+  // A row needs to be set to 1 for the LEDs to turn on
   for (int i = 0; i < 7; i++) {
-    digitalWrite(row_pins[i], row == i);
+    write_to_pin(SRCLK, 0);
+    write_to_pin(SER, i == row);
+    write_to_pin(SRCLK, 1);
   }
 
-  // set column pins
+  // Shift all of the column values
+  // The column needs to be set to 0 for the LED to turn on
   for (int i = 0; i < 5; i++) {
-    digitalWrite(col_pins[i], !cols[i]);
-    delay(1);
-    digitalWrite(col_pins[i], 1);
+    write_to_pin(SRCLK, 0);
+    write_to_pin(SER, !cols[i]);
+    write_to_pin(SRCLK, 1);
   }
 
-  // turn off the row pin
-  digitalWrite(row_pins[row], 0);
+  // Toggle the RCLK pin so that the register outputs are set synchronously
+  write_to_pin(RCLK, 1);
 }
 
 // Check if the button was pressed and inturrupt sevice routine was triggered
@@ -149,24 +175,18 @@ void button_interrupt() {
 
 void display_digit(int digit) {
   // display the digit
-  Serial.println(digit);
   for (int i = 0; i < 7; i++) {
     write_to_row(i, matrices[digit][i]);
+    delay(1);
   }
 }
 
 void setup() {
   Serial.begin(9600);
 
-  // set all row pins to output
-  for (int i = 0; i < 7; i++) {
-    pinMode(row_pins[i], OUTPUT);
-  }
-
-  // set all column pins to output
-  for (int i = 0; i < 5; i++) {
-    pinMode(col_pins[i], OUTPUT);
-  }
+  DDRD |= (1 << SER);   // set SER pin as output
+  DDRD |= (1 << RCLK);  // set RCLK pin as output
+  DDRD |= (1 << SRCLK); // set SRCLK pin as output
   
   // Set pin2 as input pullup
   pinMode(2, INPUT_PULLUP);
@@ -179,5 +199,4 @@ void setup() {
 
 void loop() {
     display_digit(curr_digit);
-    delay(1);
 }
