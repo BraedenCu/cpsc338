@@ -11,8 +11,11 @@ void setup() {
 int debounce(int pin) {
   // begin sampling
   int count = 0;
+  // iterate three times, and capture three samples for debouncing
   for (int i = 0; i < 3; i++) {
+    // if the pin is high, increment count
     count += (PIND >> pin) & 1;
+    // delay for 10ms
     delay(delay_amt);
   }
 
@@ -25,9 +28,12 @@ int debounce(int pin) {
 }
 
 int prev = 0;
+
 void loop() {
+  // debounce the button, determine state
   int curr = debounce(button_pin);
 
+  // print based on state
   if (curr != prev) {
     if (curr == HIGH) {
       Serial.println("Button not pressed");
