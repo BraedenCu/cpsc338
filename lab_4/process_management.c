@@ -87,3 +87,23 @@ unsigned int process_select(unsigned int cursp) {
     }
     return 0; // no matching process found
 }
+
+// display process list 
+void display_process_list() {
+    process_t *temp = current_process;
+    while (temp != NULL) {
+        printf("Process: %p, Stack Pointer: %u, Status: %u, Priority: %u\n", temp->f, temp->sp, temp->status_flag, temp->priority);
+        temp = temp->next; // move to the next process
+    }
+}
+
+// display stack & current location of stack pointer
+void display_stack() {
+    unsigned int *stack_pointer = (unsigned int *)current_process->sp;
+    printf("Stack Pointer: %u\n", current_process->sp);
+    printf("Stack Contents:\n");
+    for (int i = 0; i < 10; i++) { // display first 10 stack values
+        printf("%u ", stack_pointer[i]);
+    }
+    printf("\n");
+}
