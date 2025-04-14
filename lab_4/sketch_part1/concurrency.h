@@ -22,6 +22,7 @@ typedef struct process_state {
    struct process_state *next; // pointer to next process
 } process_t;
 
+
 /*------------------------------------------------------------------------
 
    THE FOLLOWING FUNCTIONS MUST BE PROVIDED.
@@ -46,15 +47,13 @@ int process_create (void (*f)(void), int n);
 
 /* ===== Part 2 ====== */
 
-typedef struct lock_state {
-   unsigned int lock; // lock state
-   unsigned int owner; // owner of the lock
-   unsigned int count; // lock count
-} lock_t;
+typedef struct lock_state lock_t;
+  /* you have to define the lock_state structure */
 
 void lock_init (lock_t *l);
 void lock_acquire (lock_t *l);
 void lock_release (lock_t *l);
+
 
 /*-- functions provided in the .c file --*/
 
