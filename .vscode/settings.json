@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "process_management.c": "cpp",
+        "concurrency.h": "c"
+    }
+}

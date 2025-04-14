@@ -19,7 +19,7 @@ typedef struct process_state {
    unsigned int status_flag; // status flag
    unsigned int priority; // process priority
    void (*f)(void); // function to execute
-   struct process_t *next; // pointer to next process
+   struct process_state *next; // pointer to next process
 } process_t;
 
 
