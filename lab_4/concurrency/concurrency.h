@@ -13,10 +13,14 @@
 extern "C" {
 #endif
 
-typedef struct process_state process_t;
-   /* opaque definition of process type; you must provide this
-      implementation.
-   */
+// process datastructure (custom)
+typedef struct process_state {
+   unsigned int sp; // stack pointer
+   unsigned int status_flag; // status flag
+   unsigned int priority; // process priority
+   void (*f)(void); // function to execute
+   struct process_t *next; // pointer to next process
+} process_t;
 
 
 /*------------------------------------------------------------------------
