@@ -7,7 +7,7 @@
  */
 #ifndef __CONCURRENCY_H__
 #define __CONCURRENCY_H__
-
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,9 +16,9 @@ extern "C" {
 // process datastructure (custom)
 typedef struct process_state {
    unsigned int sp; // stack pointer
-   unsigned int status_flag; // status flag
-   unsigned int priority; // process priority
-   void (*f)(void); // function to execute
+  //  unsigned int status_flag; // status flag
+  //  unsigned int priority; // process priority
+  //  void (*f)(void); // function to execute
    struct process_state *next; // pointer to next process
 } process_t;
 
@@ -47,8 +47,10 @@ int process_create (void (*f)(void), int n);
 
 /* ===== Part 2 ====== */
 
-typedef struct lock_state lock_t;
-  /* you have to define the lock_state structure */
+typedef struct lock_state {
+   bool is_taken; // true if locked, false if not
+   process_t* p;
+} lock_t;
 
 void lock_init (lock_t *l);
 void lock_acquire (lock_t *l);

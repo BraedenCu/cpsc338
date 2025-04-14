@@ -6,31 +6,32 @@
 void p1(void) {
   int counter = 0;
   while (1) {
+    char character = counter + 97;
     cli();
-    Serial.println(counter);
+    Serial.println(character);
     sei();
-    counter++;
-    // yield();  // switch to p2
+    counter = (counter + 1) % 26;
   }
 }
 
 void p2(void) {
+  int counter2 = 0;
   while (1) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
-    // yield();  // switch to p1
+    cli();
+    Serial.println(counter2);
+    sei();
+    counter2++;
   }
 }
 
 void p3(void) {
   long counter = 1000;
   while (1) {
+    cli();
     Serial.print("p3: ");
     Serial.println(counter);
+    sei();
     counter += 1000;
-    yield(); // cooperative yielding
   }
 }
 
@@ -50,10 +51,10 @@ void setup() {
   }
 
   // testing with a third process
-  // if (process_create(p3, 64) < 0) {
-  //   Serial.println("Error creating process p3");
-  //   return;
-  // }
+  if (process_create(p3, 64) < 0) {
+    Serial.println("Error creating process p3");
+    return;
+  }
 }
 
 void loop() {
