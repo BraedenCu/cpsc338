@@ -3,106 +3,153 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// implement process_create
-/*
-This function creates a process that starts at function f(), with an initial stack size that can hold n bytes. This function should return -1 on an error, and 0 on success. The implementation of this function may require that you allocate memory for a process_t structure, and you can use malloc() for this purpose. Remember that malloc() returns NULL if it could not allocate the requested memory. To help you with stack manipulation, we provide function process_init (detailed below).
-
-/* Note: should think about your memory map and make sure you know how spaced is used for each proc and have a utility to /* review this part of memory before too far aloZng.
+/* 
+   Global variables for our process list.
+   current_process points to the currently running process.
+   head_of_process holds the head of our process list so we can always wrap around.
 */
+process_t *head_of_process = NULL;
+process_t *current_process = NULL;
+
+/*
+ * process_create
+ *
+ * This function creates a process that starts at function f(), with an initial
+ * stack size that can hold n bytes. It returns -1 on error, and 0 on success.
+ *
+ * NOTE: The lab-provided helper process_init is used to allocate and initialize
+ * the stack. In addition, this implementation uses additional fields (f, status_flag,
+ * and priority) to support scheduling. The entire update to the process list is done
+ * in a critical section (with interrupts disabled).
+ */
 int process_create(void (*f)(void), int n) {
-    asm volatile ("cli"); // disable interrupts
+    // Disable interrupts for allocation and list modification
+    asm volatile ("cli");
 
-    process_t *new_process = process_malloc(sizeof(process_t)); // allocate memory for new process
-
-    asm volatile ("sei"); // reenable interrupts
-
+    // Allocate memory for the new process using process_malloc()
+    process_t *new_process = (process_t *) process_malloc(sizeof(process_t));
     if (new_process == NULL) {
-        return -1; // memory allocation failed
+        asm volatile ("sei");  // Re-enable interrupts before returning
+        return -1;
     }
-    new_process->sp = 0; // initialize stack pointer
-    new_process->status_flag = 0; // initialize status flag
-    new_process->f = f; // set function to execute
-    new_process->next = NULL; // initialize next pointer
-    new_process->priority = 0; // initialize priority
 
-    unsigned int stack_pointer = process_init(f, n); // initialize stack pointer
+    // Initialize the basic fields of the process
+    new_process->sp = 0;            // Will be updated after stack initialization
+    new_process->f = f;             // Function pointer for the process
+    new_process->status_flag = 0;   // Not ready initially
+    new_process->priority = 0;      // Default priority (can be adjusted later)
+    new_process->next = NULL;       // End-of-list marker
 
+    asm volatile ("sei");  // Re-enable interrupts temporarily
+
+    // Initialize the process stack using the helper function process_init()
+    unsigned int stack_pointer = process_init(f, n);
     if (stack_pointer == 0) {
-        asm volatile ("cli"); // disable interrupts
-        free(new_process); // free memory if initialization fails
-        asm volatile ("sei"); // reenable interrupts
-        return -1; // initialization failed
+        // If stack initialization fails, free memory in a critical section
+        asm volatile ("cli");
+        free(new_process);
+        asm volatile ("sei");
+        return -1;
     }
-    new_process->sp = stack_pointer; // set the stack pointer in the process structure
-    new_process->status_flag = 1; // set status flag to ready
-    new_process->priority = 1; // set priority (default to 1)
+    new_process->sp = stack_pointer;  // Set the newly initialized stack pointer
+    new_process->status_flag = 1;       // Mark process as ready
+    new_process->priority = 1;          // Set a default priority
 
-    // add the new process to the process list
-    if (current_process == NULL) {
-        current_process = new_process; // head
-    } 
-    else {
-        process_t *temp = current_process;
+    // Add the new process to our process list in a critical section
+    asm volatile ("cli");
+    if (head_of_process == NULL) {
+        // First process in the list
+        head_of_process = new_process;
+        current_process = new_process;
+    } else {
+        // Append to the end of the existing list
+        process_t *temp = head_of_process;
         while (temp->next != NULL) {
-            temp = temp->next; // traverse to end of the list
+            temp = temp->next;
         }
-        temp->next = new_process; // append to the end
+        temp->next = new_process;
     }
+    asm volatile ("sei");
 
-    process_begin(); // start the first process
-
-    return 0; // return 0 on success
+    // DO NOT call process_begin() here.
+    // process_begin() should be called only once from process_start() after all processes are created.
+    return 0;
 }
 
-// implement process_start
 /*
-This function starts the execution of concurrent processes. This function must initialize any data structures you need to implement concurrency, and start the execution of the first ready process. You can start the execution of the first process by calling the function process_begin () that we have provided. Note that process_begin() will call a function that you have to implement called process_select (detailed below).
-*/
+ * process_start
+ *
+ * This function starts the execution of concurrent processes. It initializes
+ * necessary scheduling data structures and invokes process_begin() to start the first process.
+ * After process_begin() returns (e.g., when all processes have terminated or deadlock occurs),
+ * this function enters an infinite loop.
+ */
 void process_start(void) {
-    if(current_process == NULL) {
-        return -1; // no processes to start
+    if (head_of_process == NULL) {
+        // No processes have been created; nothing to schedule.
+        return;
     }
-    process_t *temp = current_process;
-    while (temp != NULL) {
-        temp->f(); // execute the function
-        temp = temp->next; // move to the next process
-    }
+    // Set current_process to the head of the process list.
+    current_process = head_of_process;
+    // Begin process execution; process_begin() is provided and will call process_select()
+    process_begin();
+
+    // If process_begin() returns, then all processes have finished or a deadlock occurred.
+    while (1);
 }
 
-// implement process_select
 /*
-The code we provide will call process_select() with interrupts disabled. Called a "critical section" 
-The argument to process_select() is the value of the stack pointer for the currently running process. If there are no currently running processes, the argument will be 0. If the currently running process has terminated, the argument to process_select() will also be 0. If there is no process ready to execute, process_select() should return 0; if there is a ready process, process_select() must return the value of the stack pointer for the next ready process.
-*/
+ * process_select
+ *
+ * This function is invoked in a critical section (with interrupts disabled) to
+ * choose the next ready process. It implements a basic round-robin scheduler.
+ * It returns the stack pointer of the next process to run, or 0 if no process is ready.
+ */
 unsigned int process_select(unsigned int cursp) {
     if (current_process == NULL) {
-        return 0; // no processes to select
+        return 0;   // No process is currently running.
     }
-    process_t *temp = current_process;
-    while (temp != NULL) {
-        if (temp->sp == cursp) {
-            return temp->sp; // return the stack pointer of the next process
-        }
-        temp = temp->next; // move to the next process
+    // For round-robin scheduling: move to the next process in the list,
+    // wrapping around to the head if necessary.
+    process_t *next_process = current_process->next;
+    if (next_process == NULL) {
+        next_process = head_of_process;
     }
-    return 0; // no matching process found
+    current_process = next_process;
+    
+    // Optionally, additional checks on status_flag or priority can be added here.
+    return current_process->sp;
 }
 
-// display process list 
+/*
+ * display_process_list
+ *
+ * Helper function to print out the current process list. Useful for debugging.
+ */
 void display_process_list() {
-    process_t *temp = current_process;
+    process_t *temp = head_of_process;
     while (temp != NULL) {
-        printf("Process: %p, Stack Pointer: %u, Status: %u, Priority: %u\n", temp->f, temp->sp, temp->status_flag, temp->priority);
-        temp = temp->next; // move to the next process
+        // Print the process's function pointer, stack pointer, status flag, and priority.
+        printf("Process: %p, Stack Pointer: %u, Status: %u, Priority: %u\n",
+                temp->f, temp->sp, temp->status_flag, temp->priority);
+        temp = temp->next;
     }
 }
 
-// display stack & current location of stack pointer
+/*
+ * display_stack
+ *
+ * Helper function to display the current process's stack pointer and the first 10 values of its stack.
+ */
 void display_stack() {
-    unsigned int *stack_pointer = (unsigned int *)current_process->sp;
+    if (current_process == NULL) {
+        printf("No current process.\n");
+        return;
+    }
+    unsigned int *stack_pointer = (unsigned int *) current_process->sp;
     printf("Stack Pointer: %u\n", current_process->sp);
     printf("Stack Contents:\n");
-    for (int i = 0; i < 10; i++) { // display first 10 stack values
+    for (int i = 0; i < 10; i++) {  // Display the first 10 stack values
         printf("%u ", stack_pointer[i]);
     }
     printf("\n");
