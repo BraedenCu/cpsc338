@@ -29,7 +29,7 @@ void p3(void) {
     Serial.print("p3: ");
     Serial.println(counter);
     counter += 1000;
-    // If cooperative scheduling, you can do: yield();
+    yield(); // cooperative yielding
   }
 }
 
