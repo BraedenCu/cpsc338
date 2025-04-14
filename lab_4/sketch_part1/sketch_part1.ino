@@ -6,9 +6,11 @@
 void p1(void) {
   int counter = 0;
   while (1) {
+    cli();
     Serial.println(counter);
+    sei();
     counter++;
-    yield();  // switch to p2
+    // yield();  // switch to p2
   }
 }
 
@@ -18,7 +20,7 @@ void p2(void) {
     delay(100);
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
-    yield();  // switch to p1
+    // yield();  // switch to p1
   }
 }
 
@@ -36,8 +38,6 @@ void setup() {
   Serial.begin(9600);
 
   pinMode(LED_BUILTIN, OUTPUT);
-
-  Serial.println("Initialize serial port");
 
   if (process_create(p1, 64) < 0) {
     Serial.println("Error creating process p1");

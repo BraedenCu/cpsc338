@@ -16,9 +16,9 @@ extern "C" {
 // process datastructure (custom)
 typedef struct process_state {
    unsigned int sp; // stack pointer
-   unsigned int status_flag; // status flag
-   unsigned int priority; // process priority
-   void (*f)(void); // function to execute
+  //  unsigned int status_flag; // status flag
+  //  unsigned int priority; // process priority
+  //  void (*f)(void); // function to execute
    struct process_state *next; // pointer to next process
 } process_t;
 

@@ -19,9 +19,9 @@ int process_create(void (*f)(void), int n) {
 
     new_proc->sp          = 0;
     new_proc->next        = NULL;
-    new_proc->status_flag = 0;
-    new_proc->priority    = 0;
-    new_proc->f           = f;
+    // new_proc->status_flag = 0;
+    // new_proc->priority    = 0;
+    // new_proc->f           = f;
 
     sei();  
 
@@ -36,8 +36,8 @@ int process_create(void (*f)(void), int n) {
     }
 
     new_proc->sp          = sp_init;
-    new_proc->status_flag = 1;  // 1 = ready
-    new_proc->priority    = 1;  // default priority
+    // new_proc->status_flag = 1;  // 1 = ready
+    // new_proc->priority    = 1;  // default priority
 
     cli();
     if (head_of_process == NULL) {
@@ -57,17 +57,17 @@ int process_create(void (*f)(void), int n) {
 
 void process_start(void) {
     if (head_of_process == NULL) {
-        current_process = NULL;
+        // current_process = NULL;
         return;
     }
 
-    current_process = head_of_process;
+    // current_process = head_of_process;
 
     process_begin();
 
-    while (1) {
-        // stay here forever
-    }
+    // while (1) {
+    //     // stay here forever
+    // }
 }
 
 unsigned int process_select(unsigned int cursp) {
@@ -93,31 +93,31 @@ unsigned int process_select(unsigned int cursp) {
         }
     }
 
-    if (current_process->status_flag != 1) {
-        return 0;  // no ready process
-    }
+    // if (current_process->status_flag != 1) {
+    //     return 0;  // no ready process
+    // }
 
     return current_process->sp; // return choosen process stack pointer
 }
 
-void display_process_list() {
-    process_t *temp = head_of_process;
-    while (temp != NULL) {
-        printf("Process f=%p, SP=%u, status=%u, priority=%u\n",
-               temp->f, temp->sp, temp->status_flag, temp->priority);
-        temp = temp->next;
-    }
-}
+// void display_process_list() {
+//     process_t *temp = head_of_process;
+//     while (temp != NULL) {
+//         printf("Process f=%p, SP=%u, status=%u, priority=%u\n",
+//                temp->f, temp->sp, temp->status_flag, temp->priority);
+//         temp = temp->next;
+//     }
+// }
 
-void display_stack() {
-    if (current_process == NULL) {
-        printf("No current process.\n");
-        return;
-    }
-    unsigned int *stk = (unsigned int *) current_process->sp;
-    printf("Stack Pointer: %u\nStack Top 10:\n", current_process->sp);
-    for (int i = 0; i < 10; i++) {
-        printf("%u ", stk[i]);
-    }
-    printf("\n");
-}
+// void display_stack() {
+//     if (current_process == NULL) {
+//         printf("No current process.\n");
+//         return;
+//     }
+//     unsigned int *stk = (unsigned int *) current_process->sp;
+//     printf("Stack Pointer: %u\nStack Top 10:\n", current_process->sp);
+//     for (int i = 0; i < 10; i++) {
+//         printf("%u ", stk[i]);
+//     }
+//     printf("\n");
+// }
