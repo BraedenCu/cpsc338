@@ -3,20 +3,9 @@
 #include <stdlib.h>
 #include <avr/interrupt.h>
 
-/*
- * According to the lab spec, we must maintain:
- *   (a) A global "current_process" pointer.
- *   (b) A minimal "process_t" with at least "sp" and "next".
- * 
- * We may add fields (status_flag, priority, f) as in concurrency.h,
- * but the core logic must revolve around sp and next for scheduling.
- */
 
-/* You can optionally keep a list head pointer to manage multiple processes. */
-static process_t *head_of_process = NULL;
-
-/* Global pointer to the currently running process as required by the lab. */
-process_t *current_process = NULL;
+static process_t *head_of_process = NULL; // head of the process list
+process_t *current_process = NULL; // currently running process
 
 /*
  * process_create(void (*f)(void), int n)
@@ -159,7 +148,7 @@ unsigned int process_select(unsigned int cursp) {
     return current_process->sp;
 }
 
-/* Optional: debugging helpers, not required by lab. */
+// Debug helper function to display the process list
 void display_process_list() {
     process_t *temp = head_of_process;
     while (temp != NULL) {
@@ -169,6 +158,7 @@ void display_process_list() {
     }
 }
 
+// Debug helper function to display the current process
 void display_stack() {
     if (current_process == NULL) {
         printf("No current process.\n");
