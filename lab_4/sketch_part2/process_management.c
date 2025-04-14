@@ -9,108 +9,115 @@ process_t *current_process = NULL; // currently running process
 
 
 int process_create(void (*f)(void), int n) {
-    cli();  
+    cli();  // disable interrupts
 
     process_t *new_proc = (process_t *) process_malloc(sizeof(process_t));
-    if (new_proc == NULL) {
+    
+    if (new_proc == NULL) 
+    {
         sei();  
         return -1; 
     }
 
-    new_proc->sp          = 0;
-    new_proc->next        = NULL;
-    // new_proc->status_flag = 0;
-    // new_proc->priority    = 0;
-    // new_proc->f           = f;
+    new_proc->sp   = 0;
+    new_proc->next = NULL;
 
-    sei();  
+    sei(); // renable interrupts
 
-    cli();
+    cli(); // disable interrupts
+    
     unsigned int sp_init = process_init(f, n);
-    sei();
-    if (sp_init == 0) {
-        cli();
-        free(new_proc);
-        sei();
+    
+    sei(); //renable interrupts
+    
+    if (sp_init == 0) 
+    {
+        cli(); // disable interrupts
+        free(new_proc); // free mem
+        sei(); // renable interrupts
         return -1;
     }
 
-    new_proc->sp          = sp_init;
-    // new_proc->status_flag = 1;  // 1 = ready
-    // new_proc->priority    = 1;  // default priority
+    new_proc->sp = sp_init;
 
-    cli();
-    if (head_of_process == NULL) {
-        head_of_process  = new_proc;
+    cli(); // disable interrupts
+    
+    if (head_of_process == NULL) 
+    {
+        head_of_process  = new_proc; // no head, process is now head 
     } 
-    else {
+    else 
+    {
         process_t *temp = head_of_process;
-        while (temp->next != NULL) {
+        while (temp->next != NULL) 
+        {
             temp = temp->next;
         }
-        temp->next = new_proc;
+        temp->next = new_proc; // store process at the end
     }
-    sei();
+    
+    sei(); // renable interrupts
 
     return 0; // success
 }
 
 void process_start(void) {
-    if (head_of_process == NULL) {
-        // current_process = NULL;
+    if (head_of_process == NULL) 
+    {
         return;
     }
 
-    // current_process = head_of_process;
-
     process_begin();
-
-    // while (1) {
-    //     // stay here forever
-    // }
 }
 
 unsigned int process_select(unsigned int cursp) {
-    if (head_of_process == NULL) {
+    if (head_of_process == NULL) 
+    {
         current_process = NULL;  
         return 0;  // no processes to run
     }
 
-    if (current_process != NULL && cursp != 0) {
+    if (current_process != NULL && cursp != 0) 
+    {
         current_process->sp = cursp;
     }
 
     // round robin approach
-    if (current_process == NULL) {
-        current_process = head_of_process;
+    if (current_process == NULL) 
+    {
+        current_process = head_of_process; // done if only one
     } 
-    else {
+    else 
+    {
         // move to next in list, wrap around for RR
-        if (current_process->next != NULL) {
+        if (current_process->next != NULL) 
+        {
             current_process = current_process->next;
-        } else {
+        } 
+        else 
+        {
             current_process = head_of_process;
         }
     }
-
-    // if (current_process->status_flag != 1) {
-    //     return 0;  // no ready process
-    // }
-
+    
     return current_process->sp; // return choosen process stack pointer
 }
 
 
-void lock_init (lock_t *l) {
+void lock_init (lock_t *l) 
+{
     l->is_taken = false;
     l->p = NULL;
 }
 
-void lock_acquire (lock_t *l) {
+void lock_acquire (lock_t *l) 
+{
     l->is_taken = true;
     l->p = current_process;
 }
-void lock_release (lock_t *l) {
+
+void lock_release (lock_t *l) 
+{
     l->is_taken = false;
     l->p = NULL;
 }

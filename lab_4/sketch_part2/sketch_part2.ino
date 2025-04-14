@@ -5,15 +5,27 @@
 
 lock_t* l = NULL;
 
+const int RED_PIN_LED = 9;
+const int GREEN_PIN_LED = 10;
+const int BLUE_PIN_LED = 11;
+
+int DISPLAY_TIME = 100; 
+
 void p1(void) {
   int last_blink1 = millis();
   while (1) {
     int curr_time1 = millis();
-    if ( curr_time1 >= (last_blink1 + 3000) && !l->is_taken) {
+    if ( curr_time1 >= (last_blink1 + 1000) && !l->is_taken) {
       lock_acquire(l);
       digitalWrite(LED_BUILTIN, HIGH);
+      digitalWrite(RED_PIN_LED, LOW);
+      digitalWrite(GREEN_PIN_LED, HIGH);
+      digitalWrite(BLUE_PIN_LED, LOW);
       delay(500);
       digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(RED_PIN_LED, LOW);
+      digitalWrite(GREEN_PIN_LED, LOW);
+      digitalWrite(BLUE_PIN_LED, LOW);
       lock_release(l);
       last_blink1 = curr_time1;
     }
@@ -26,9 +38,18 @@ void p2(void) {
     int curr_time2 = millis();
     if ( curr_time2 >= (last_blink2 + 4500) && !l->is_taken) {
       lock_acquire(l);
-      digitalWrite(LED_BUILTIN, HIGH);
-      delay(20);
-      digitalWrite(LED_BUILTIN, LOW);
+      for(int i = 0; i < 10; i+=1) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        digitalWrite(RED_PIN_LED, HIGH);
+        digitalWrite(GREEN_PIN_LED, LOW);
+        digitalWrite(BLUE_PIN_LED, LOW);
+        delay(20);
+        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(RED_PIN_LED, LOW);
+        digitalWrite(GREEN_PIN_LED, LOW);
+        digitalWrite(BLUE_PIN_LED, LOW);
+        delay(20);
+      }
       lock_release(l);
       last_blink2 = curr_time2;
     }
@@ -47,6 +68,15 @@ void p2(void) {
 // }
 
 void setup() {
+
+  pinMode(RED_PIN_LED, OUTPUT);
+  pinMode(GREEN_PIN_LED, OUTPUT);
+  pinMode(BLUE_PIN_LED, OUTPUT);
+
+  digitalWrite(RED_PIN_LED, LOW);
+  digitalWrite(GREEN_PIN_LED, LOW);
+  digitalWrite(BLUE_PIN_LED, LOW);
+
   cli();
   l = process_malloc(sizeof(lock_t));
   lock_init(l);
