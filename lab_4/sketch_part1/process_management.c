@@ -40,6 +40,7 @@ int process_create(void (*f)(void), int n) {
     cli();
     unsigned int stack_pointer = process_init(f, n);
     sei();
+    
     if (stack_pointer == 0) {
         cli();
         free(new_process);
