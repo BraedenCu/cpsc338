@@ -12,9 +12,9 @@ const int BLUE_PIN_LED = 11;
 int DISPLAY_TIME = 100; 
 
 void p1(void) {
-  int last_blink1 = millis();
+  unsigned long last_blink1 = millis();
   while (1) {
-    int curr_time1 = millis();
+    unsigned long curr_time1 = millis();
     if ( curr_time1 >= (last_blink1 + 1000) && !l->is_taken) {
       lock_acquire(l);
       digitalWrite(LED_BUILTIN, HIGH);
@@ -33,10 +33,11 @@ void p1(void) {
 }
 
 void p2(void) {
-  int last_blink2 = millis();
+  unsigned long last_blink2 = millis();
   while (1) {
-    int curr_time2 = millis();
+    unsigned long curr_time2 = millis();
     if ( curr_time2 >= (last_blink2 + 4500) && !l->is_taken) {
+      
       lock_acquire(l);
       for(int i = 0; i < 10; i+=1) {
         digitalWrite(LED_BUILTIN, HIGH);
