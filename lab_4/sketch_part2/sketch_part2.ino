@@ -14,14 +14,14 @@ const int BLUE_PIN  = 11;
 void p1(void) {
   while (1) {
     lock_acquire(l);
-      Serial.println("=== P1 BEGIN ===");
+      Serial.println("PROC ONE BEGIN");
       for (int i = 0; i < 5; i++) {
         digitalWrite(GREEN_PIN, HIGH);
         delay(200);
         digitalWrite(GREEN_PIN, LOW);
         delay(200);
       }
-      Serial.println("=== P1 END   ===");
+      Serial.println("PROC ONE END");
     lock_release(l);
     yield();
     delay(500);
@@ -32,14 +32,14 @@ void p1(void) {
 void p2(void) {
   while (1) {
     lock_acquire(l);
-      Serial.println("+++ P2 BEGIN +++");
+      Serial.println("PROC 2 BEGIN");
       for (int i = 0; i < 5; i++) {
         digitalWrite(RED_PIN, HIGH);
         delay(200);
         digitalWrite(RED_PIN, LOW);
         delay(200);
       }
-      Serial.println("+++ P2 END   +++");
+      Serial.println("PROC 2 END");
     lock_release(l);
     yield();
     delay(500);
@@ -59,13 +59,12 @@ void setup() {
   lock_init(l);
 
   // register processes
-  if (process_create(p1, 64) < 0) Serial.println("Error creating p1");
-  if (process_create(p2, 64) < 0) Serial.println("Error creating p2");
+  if (process_create(p1, 64) < 0) Serial.println("Error creating proc 1");
+  if (process_create(p2, 64) < 0) Serial.println("Error creating proc 2");
 }
 
 void loop() {
   process_start();
-  // if we ever return:
-  Serial.println("!!! deadlock or all done !!!");
+  Serial.println("deadlock or all done");
   while (1);
 }

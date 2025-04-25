@@ -106,15 +106,17 @@ unsigned int process_select(unsigned int cursp) {
 
 
 void lock_init(lock_t *lk) {
-  lk->is_taken = false;
+  lk->is_taken = false; // check if lock is taken
 }
 
 // atomic test-and-set
 void lock_acquire(lock_t *lk) {
-  while (1) {
+  while (1) 
+  {
     cli();                         // start critical section
-      if (!lk->is_taken) {
-        lk->is_taken = true;         // claim the lock
+      if (!lk->is_taken) 
+      {
+        lk->is_taken = true;       // claim the lock
         sei();                     // end critical section
         return;
       }
@@ -123,8 +125,9 @@ void lock_acquire(lock_t *lk) {
   }
 }
 
-void lock_release(lock_t *lk) {
+void lock_release(lock_t *lk) 
+{
   cli();                          
-    lk->is_taken = false;           // free the lock
+  lk->is_taken = false;           // free the lock
   sei();
 }
