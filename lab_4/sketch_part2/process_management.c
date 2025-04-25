@@ -104,20 +104,27 @@ unsigned int process_select(unsigned int cursp) {
 }
 
 
-void lock_init (lock_t *l) 
-{
-    l->is_taken = false;
-    l->p = NULL;
+
+void lock_init(lock_t *lk) {
+  lk->is_taken = false;
 }
 
-void lock_acquire (lock_t *l) 
-{
-    l->is_taken = true;
-    l->p = current_process;
+// atomic test-and-set
+void lock_acquire(lock_t *lk) {
+  while (1) {
+    cli();                         // start critical section
+      if (!lk->is_taken) {
+        lk->is_taken = true;         // claim the lock
+        sei();                     // end critical section
+        return;
+      }
+    sei();                         // release critical section
+    yield();                       // let other process run
+  }
 }
 
-void lock_release (lock_t *l) 
-{
-    l->is_taken = false;
-    l->p = NULL;
+void lock_release(lock_t *lk) {
+  cli();                          
+    lk->is_taken = false;           // free the lock
+  sei();
 }
